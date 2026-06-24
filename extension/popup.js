@@ -101,10 +101,18 @@ function normalizeHandle(value) {
 }
 
 function buildCodexPrompt(claim) {
+  const consoleSnippet = `window.TOKEN_RANK_UPLOAD = {
+  uploadUrl: "${claim.upload_url}",
+  xHandle: "${claim.x_handle}",
+  nonce: "${claim.nonce}"
+};`;
+
   return `请阅读这个 GitHub 仓库：
 ${GITHUB_REPO}
 
-运行 collector 目录里的脚本。不要读取或上传 API Key、cookie、密码、环境变量或其他隐私数据。
+不要用 Node 运行 collector/upload-codex-claim.js；它必须在 Codex 统计页的浏览器 Console 里运行。
+
+不要读取或上传 API Key、cookie、密码、环境变量或其他隐私数据。
 
 任务：读取当前 Codex 统计页里的“近 3 个月累计 Token 数”，并上传到 Token Rank。
 
@@ -114,7 +122,17 @@ ${GITHUB_REPO}
 - upload_url: ${claim.upload_url}
 - period: last_3_months
 
-在上传前，请展示你解析到的 token 数、页面上下文和脚本将上传的 JSON，等待我确认后再上传。`;
+请按这个方式执行：
+1. 打开 Codex 统计页。
+2. 打开浏览器 DevTools Console。
+3. 先粘贴以下参数：
+
+\`\`\`js
+${consoleSnippet}
+\`\`\`
+
+4. 再把 collector/upload-codex-claim.js 的完整内容粘贴到同一个 Console 执行。
+5. 在上传前，脚本会展示解析到的 token 数、页面上下文和将上传的 JSON；请等待我确认后再上传。`;
 }
 
 async function loadState() {

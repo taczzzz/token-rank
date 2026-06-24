@@ -16,5 +16,14 @@
 1. 在浏览器打开 Codex 统计页。
 2. 通过插件生成上传 prompt。
 3. 把 prompt 粘贴给 Codex。
-4. Codex 读取本仓库后，只运行 `collector/upload-codex-claim.js`。
+4. Codex 读取本仓库后，不要用 Node 运行脚本。
+5. Codex 应该把 `collector/browser-console-snippet.js` 里的占位参数替换成 prompt 提供的参数，然后拼接 `collector/upload-codex-claim.js` 的内容。
+6. 把拼接后的完整 JavaScript 粘贴到 Codex 统计页的浏览器 Console 执行。
 
+`collector/upload-codex-claim.js` 依赖浏览器页面上下文里的：
+
+```js
+window.TOKEN_RANK_UPLOAD = { uploadUrl, xHandle, nonce }
+```
+
+如果在 Node 里运行，会按设计报错 `Missing TOKEN_RANK_UPLOAD`。
