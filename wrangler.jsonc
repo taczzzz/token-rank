@@ -1,0 +1,13 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "token-rank-api",
+  "main": "worker/index.js",
+  "compatibility_date": "2026-06-01",
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "token-rank-db",
+      "database_id": "17258119-1851-47a2-a053-749412301afc"
+    }
+  ]
+}

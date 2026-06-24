@@ -1,0 +1,17 @@
+{
+  "name": "token-rank-x-extension",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "check": "node --check extension/content.js && node --check extension/popup.js && node --check extension/codex-scraper.js && node --check worker/index.js",
+    "worker:dev": "wrangler dev",
+    "worker:deploy": "wrangler deploy",
+    "d1:create": "wrangler d1 create token-rank-db",
+    "d1:migrate:local": "wrangler d1 migrations apply token-rank-db --local",
+    "d1:migrate:remote": "wrangler d1 migrations apply token-rank-db --remote"
+  },
+  "devDependencies": {
+    "wrangler": "^4.104.0"
+  }
+}
