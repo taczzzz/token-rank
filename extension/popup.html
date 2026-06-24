@@ -28,15 +28,16 @@
       </section>
 
       <div class="actions">
-        <button id="claim" type="button">生成上传 Prompt</button>
+        <button id="upload" type="button">上传当前页面</button>
+        <button id="claim" type="button" class="secondary">生成备用 Prompt</button>
         <button id="connect" type="button">Connect Codex</button>
-        <button id="read" type="button" class="secondary">读取当前页面</button>
+        <button id="read" type="button" class="secondary">仅本地读取</button>
       </div>
 
       <textarea id="prompt" readonly hidden></textarea>
 
       <p class="note">
-        读取只发生在你打开的 Codex 页面里，插件会把可见的近 3 个月累计 token 数保存到本机。
+        打开 Codex 统计页后点击上传，插件会读取当前页面可见的近 3 个月累计 token，并上传到 Cloudflare。
       </p>
     </main>
     <script src="config.js"></script>

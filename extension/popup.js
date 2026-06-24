@@ -12,6 +12,7 @@ const updatedEl = document.getElementById("updated");
 const xHandleEl = document.getElementById("xHandle");
 const promptEl = document.getElementById("prompt");
 const claimButton = document.getElementById("claim");
+const uploadButton = document.getElementById("upload");
 const connectButton = document.getElementById("connect");
 const readButton = document.getElementById("read");
 
@@ -47,10 +48,70 @@ claimButton.addEventListener("click", async () => {
   statusEl.textContent = "Prompt 已生成，复制到 Codex";
 });
 
-connectButton.addEventListener("click", async () => {
-  const granted = await chrome.permissions.request({
-    origins: ["https://chatgpt.com/*"]
+uploadButton.addEventListener("click", async () => {
+  const xHandle = normalizeHandle(xHandleEl.value);
+  if (!xHandle) {
+    statusEl.textContent = "请先填写 X handle";
+    xHandleEl.focus();
+    return;
+  }
+  if (!API_BASE || API_BASE.includes("YOUR_WORKERS_SUBDOMAIN")) {
+    statusEl.textContent = "请先配置 Cloudflare Worker API 地址";
+    return;
+  }
+
+  const granted = await ensureCodexPermission();
+  if (!granted) {
+    statusEl.textContent = "需要同意访问 Codex 页面";
+    return;
+  }
+
+  const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+  if (!tab?.id || !tab.url?.startsWith("https://chatgpt.com/codex")) {
+    statusEl.textContent = "请先打开 Codex 统计页";
+    await chrome.tabs.create({ url: CODEX_URL });
+    return;
+  }
+
+  statusEl.textContent = "正在生成上传码";
+  const response = await fetch(`${API_BASE}/api/claims/start`, {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ x_handle: xHandle })
   });
+
+  if (!response.ok) {
+    statusEl.textContent = "生成上传码失败";
+    return;
+  }
+
+  const claim = await response.json();
+  await chrome.storage.local.set({
+    tokenRankCodexConsent: true,
+    tokenRankPendingUpload: {
+      uploadUrl: claim.upload_url,
+      xHandle: claim.x_handle,
+      nonce: claim.nonce
+    }
+  });
+
+  statusEl.textContent = "正在读取并上传";
+  const [result] = await chrome.scripting.executeScript({
+    target: { tabId: tab.id },
+    files: ["codex-scraper.js"]
+  });
+
+  if (result?.result?.ok) {
+    await chrome.storage.local.remove("tokenRankPendingUpload");
+    await loadState();
+    statusEl.textContent = "上传成功 · X 页面会显示 Codex Verified";
+  } else {
+    statusEl.textContent = result?.result?.error || "上传失败";
+  }
+});
+
+connectButton.addEventListener("click", async () => {
+  const granted = await ensureCodexPermission();
 
   if (!granted) {
     statusEl.textContent = "需要同意访问 Codex 页面";
@@ -98,6 +159,18 @@ function normalizeHandle(value) {
     .replace(/^@/, "")
     .trim()
     .toLowerCase();
+}
+
+async function ensureCodexPermission() {
+  const hasPermission = await chrome.permissions.contains({
+    origins: ["https://chatgpt.com/*"]
+  });
+  if (hasPermission) {
+    return true;
+  }
+  return chrome.permissions.request({
+    origins: ["https://chatgpt.com/*"]
+  });
 }
 
 function buildCodexPrompt(claim) {

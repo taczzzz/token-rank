@@ -12,9 +12,11 @@
     "default_title": "Token Rank",
     "default_popup": "popup.html"
   },
-  "optional_host_permissions": [
+  "host_permissions": [
     "https://*.workers.dev/*",
-    "https://api.tokenrank.xyz/*",
+    "https://api.tokenrank.xyz/*"
+  ],
+  "optional_host_permissions": [
     "https://chatgpt.com/*"
   ],
   "content_scripts": [

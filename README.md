@@ -10,10 +10,10 @@
 
 ## 可信模型
 
-大众版不要求用户提供 OpenAI Admin Key。用户点击插件后生成一次性上传码和 prompt，Codex 阅读本 GitHub 仓库里的 `collector/` 脚本，从当前 Codex 统计页读取“近 3 个月累计 Token 数”，再上传到 Cloudflare Worker。
+大众版不要求用户提供 OpenAI Admin Key。用户打开 Codex 统计页后，在插件里填写 X handle 并点击 `上传当前页面`。插件会生成一次性上传码，从当前页面读取“近 3 个月累计 Token 数”，再上传到 Cloudflare Worker。
 
 ```text
-插件生成 nonce -> 用户把 prompt 发给 Codex -> Codex 运行 collector -> Worker 校验证据 -> X 插件展示远端 badge
+插件生成 nonce -> 插件读取当前 Codex 页面 -> Worker 校验证据 -> X 插件展示远端 badge
 ```
 
 这不是官方 API 级别的 `API Verified`，首版展示为 `Codex Verified`。它适合大众传播和低门槛安装，但不能达到官方 API 的绝对防作弊。
@@ -24,7 +24,7 @@
 - 用户不手填 token 数，collector 从页面可见文本解析。
 - 上传时提交 `matched_text` 和 `page_text_sha256`。
 - Worker 重新解析 `matched_text`，和 `total_tokens` 对不上会拒绝。
-- collector 上传前展示 JSON，需要用户确认。
+- 插件只读取当前页面可见文本，不读取 cookie、API Key、密码或环境变量。
 
 ## 等级规则
 
@@ -87,11 +87,11 @@ Chrome/Edge -> chrome://extensions -> Developer mode -> Load unpacked -> 选择 
 
 2. 点击浏览器工具栏里的 Token Rank 插件。
 
-3. 填写 X handle，点击 `生成上传 Prompt`。
+3. 打开 Codex 统计页。
 
-4. 把生成的 prompt 粘贴给 Codex。
+4. 在插件里填写 X handle，点击 `上传当前页面`。
 
-5. Codex 上传成功后，打开 X 用户主页，例如：
+5. 上传成功后，打开 X 用户主页，例如：
 
 ```text
 https://x.com/shngyo1taczzzz
@@ -105,7 +105,6 @@ npm run check
 
 ## 生产化还缺的部分
 
-- GitHub 仓库地址固定后，把 `extension/config.js` 里的 `githubRepo` 改成真实仓库。
 - Worker 域名固定后，把 `extension/config.js` 里的 `apiBase` 改成真实 API。
 - 如果要更可信，需要官方 API 授权或商店签名插件。
 - 如果要公开上架，需要补隐私政策和更完整的权限说明。
