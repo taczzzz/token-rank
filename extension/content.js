@@ -48,6 +48,10 @@ function findProfileInsertionPoint() {
 }
 
 function rankGlyphs(rank) {
+  if (!rank) {
+    return "";
+  }
+
   const glyphs = [];
   for (let i = 0; i < Math.min(rank.suns, 6); i += 1) {
     glyphs.push('<span class="trx-glyph trx-sun" title="1B tokens">☀</span>');
@@ -76,21 +80,45 @@ function confidenceText(confidence) {
   return "Local";
 }
 
+function formatChineseTokenUsage(badge) {
+  const totalTokens = Number(badge.totalTokens);
+  if (Number.isFinite(totalTokens) && totalTokens >= 100_000_000) {
+    return `${trimNumber(totalTokens / 100_000_000)}亿`;
+  }
+  if (Number.isFinite(totalTokens) && totalTokens >= 10_000) {
+    return `${trimNumber(totalTokens / 10_000)}万`;
+  }
+  if (Number.isFinite(totalTokens)) {
+    return new Intl.NumberFormat("zh-CN").format(totalTokens);
+  }
+  return badge.formattedTokens || "已验证";
+}
+
+function trimNumber(value) {
+  return value.toFixed(2).replace(/\.?0+$/, "");
+}
+
 function renderBadge(container, badge) {
+  const usageText = formatChineseTokenUsage(badge);
+  const totalStars = badge.rank?.totalStars ?? 0;
+  const titleTokens = Number(badge.totalTokens);
+  const titleTokenText = Number.isFinite(titleTokens) ? titleTokens.toLocaleString() : usageText;
+
   container.innerHTML = `
-    <div class="trx-line" role="group" aria-label="Verified token usage rank">
-      <span class="trx-icon" aria-hidden="true">◈</span>
-      <span class="trx-source">Codex</span>
-      <span class="trx-rank">${rankGlyphs(badge.rank)}</span>
-      <strong>${badge.formattedTokens}</strong>
-      <span>tokens</span>
-      <span class="trx-separator">·</span>
-      <strong>${badge.rank.totalStars}</strong>
-      <span>星</span>
-      <span class="trx-verified">${confidenceText(badge.confidence)}</span>
+    <div class="trx-card" role="group" aria-label="Codex verified token usage">
+      <div class="trx-main">
+        <span class="trx-icon" aria-hidden="true">◈</span>
+        <strong>近3月token消耗：${usageText}</strong>
+        <span class="trx-verified">${confidenceText(badge.confidence)}</span>
+      </div>
+      <div class="trx-meta">
+        <span class="trx-source">Codex</span>
+        <span class="trx-rank" aria-label="${totalStars} token stars">${rankGlyphs(badge.rank)}</span>
+        <span>${totalStars} 星等级</span>
+      </div>
     </div>
   `;
-  container.title = `Codex: ${badge.totalTokens.toLocaleString()} tokens\nPeriod: ${badge.period}\nSource: ${badge.source}\nUpdated: ${badge.updatedAt}`;
+  container.title = `Codex: ${titleTokenText} tokens\nPeriod: ${badge.period}\nSource: ${badge.source}\nUpdated: ${badge.updatedAt}`;
 }
 
 function renderError(container) {
