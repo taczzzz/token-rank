@@ -221,11 +221,33 @@ async function loadState() {
   statusEl.textContent = "Codex 已连接 · 近 3 个月累计";
   rankEl.hidden = false;
   glyphsEl.innerHTML = renderGlyphs(badge.rank);
-  tokensEl.textContent = `${badge.formattedTokens} tokens · 近 3 个月累计`;
+  tokensEl.textContent = `近3月token消耗：${formatChineseTokenUsage(badge)}`;
   updatedEl.textContent = `更新于 ${new Date(badge.updatedAt).toLocaleString()}`;
 }
 
+function formatChineseTokenUsage(badge) {
+  const totalTokens = Number(badge.totalTokens);
+  if (Number.isFinite(totalTokens) && totalTokens >= 100_000_000) {
+    return `${trimNumber(totalTokens / 100_000_000)}亿`;
+  }
+  if (Number.isFinite(totalTokens) && totalTokens >= 10_000) {
+    return `${trimNumber(totalTokens / 10_000)}万`;
+  }
+  if (Number.isFinite(totalTokens)) {
+    return new Intl.NumberFormat("zh-CN").format(totalTokens);
+  }
+  return badge.formattedTokens || "已验证";
+}
+
+function trimNumber(value) {
+  return value.toFixed(2).replace(/\.?0+$/, "");
+}
+
 function renderGlyphs(rank) {
+  if (!rank) {
+    return '<span class="glyph star">0</span>';
+  }
+
   const glyphs = [];
   for (let i = 0; i < Math.min(rank.suns, 6); i += 1) {
     glyphs.push('<span class="glyph sun">☀</span>');

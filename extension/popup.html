@@ -8,18 +8,45 @@
   </head>
   <body>
     <main class="popup">
-      <header>
+      <header class="topbar">
         <div>
+          <p class="eyebrow">X Profile Badge</p>
           <h1>Token Rank</h1>
           <p id="status">Codex 未连接</p>
         </div>
-        <span class="mark">◈</span>
+        <span class="mark">𝕏</span>
       </header>
 
-      <section class="rank" id="rank" hidden>
-        <div class="glyphs" id="glyphs"></div>
-        <strong id="tokens">0 tokens</strong>
-        <span id="updated"></span>
+      <section class="profile-card" aria-label="X profile badge preview">
+        <div class="cover"></div>
+        <div class="profile-body">
+          <div class="avatar" aria-hidden="true"></div>
+          <div class="identity">
+            <strong>烂活Web3 <span class="verified">✓</span></strong>
+            <span>@shngyo1taczzzz</span>
+          </div>
+
+          <div class="member-card">
+            <span class="member-mark">✳</span>
+            <div>
+              <strong>Lighthouse 成员</strong>
+              <span>TIER D · 烂活Web3</span>
+            </div>
+          </div>
+
+          <section class="rank" id="rank" hidden>
+            <div class="rank-main">
+              <span class="rank-mark">◈</span>
+              <strong id="tokens">0 tokens</strong>
+              <span class="proof-label">Codex Verified</span>
+            </div>
+            <div class="rank-meta">
+              <span>Codex</span>
+              <div class="glyphs" id="glyphs"></div>
+              <span id="updated"></span>
+            </div>
+          </section>
+        </div>
       </section>
 
       <section class="claim">
@@ -37,7 +64,7 @@
       <textarea id="prompt" readonly hidden></textarea>
 
       <p class="note">
-        打开 Codex 统计页后点击上传，插件会读取当前页面可见的近 3 个月累计 token，并上传到 Cloudflare。
+        打开 Codex 统计页后点击上传，插件只读取当前页面可见的近 3 个月累计 token。
       </p>
     </main>
     <script src="config.js"></script>
