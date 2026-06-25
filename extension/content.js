@@ -47,6 +47,50 @@ function findProfileInsertionPoint() {
   return userName.parentElement;
 }
 
+function findLighthouseCard() {
+  const candidates = Array.from(document.querySelectorAll("span, strong, div"))
+    .filter((node) => node.textContent?.includes("Lighthouse 成员"));
+
+  for (const candidate of candidates) {
+    let node = candidate;
+    for (let i = 0; i < 8 && node?.parentElement; i += 1) {
+      const rect = node.getBoundingClientRect();
+      const text = node.textContent || "";
+      if (
+        rect.width >= 220 &&
+        rect.width <= 420 &&
+        rect.height >= 46 &&
+        rect.height <= 90 &&
+        text.includes("TIER")
+      ) {
+        return node;
+      }
+      node = node.parentElement;
+    }
+  }
+
+  return null;
+}
+
+function ensureBadgeRow(insertionPoint) {
+  const lighthouseCard = findLighthouseCard();
+  if (!lighthouseCard?.parentElement) {
+    return insertionPoint;
+  }
+
+  const existingRow = lighthouseCard.closest(".trx-badge-row");
+  if (existingRow) {
+    return existingRow;
+  }
+
+  const parent = lighthouseCard.parentElement;
+  const row = document.createElement("div");
+  row.className = "trx-badge-row";
+  parent.insertBefore(row, lighthouseCard);
+  row.append(lighthouseCard);
+  return row;
+}
+
 function rankGlyphs(rank) {
   if (!rank) {
     return "";
@@ -141,7 +185,8 @@ async function inject() {
     return;
   }
 
-  const insertionPoint = findProfileInsertionPoint();
+  const profileInsertionPoint = findProfileInsertionPoint();
+  const insertionPoint = profileInsertionPoint ? ensureBadgeRow(profileInsertionPoint) : null;
   if (!insertionPoint) {
     return;
   }
