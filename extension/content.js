@@ -83,10 +83,22 @@ function ensureBadgeRow(insertionPoint) {
     return existingRow;
   }
 
-  const parent = lighthouseCard.parentElement;
+  let parent = lighthouseCard.parentElement;
+  while (parent?.parentElement && parent !== insertionPoint) {
+    const rect = parent.getBoundingClientRect();
+    if (rect.width >= 560) {
+      break;
+    }
+    parent = parent.parentElement;
+  }
+
   const row = document.createElement("div");
   row.className = "trx-badge-row";
-  parent.insertBefore(row, lighthouseCard);
+  let anchor = lighthouseCard;
+  while (anchor.parentElement && anchor.parentElement !== parent) {
+    anchor = anchor.parentElement;
+  }
+  parent.insertBefore(row, anchor.parentElement === parent ? anchor : parent.firstChild);
   row.append(lighthouseCard);
   return row;
 }
@@ -194,12 +206,12 @@ async function inject() {
   lastHandle = handle;
   lastRenderAt = now;
 
-  let root = insertionPoint.querySelector(`.${ROOT_CLASS}`);
+  let root = document.querySelector(`.${ROOT_CLASS}`);
   if (!root) {
     root = document.createElement("div");
     root.className = ROOT_CLASS;
-    insertionPoint.append(root);
   }
+  insertionPoint.append(root);
 
   root.innerHTML = `
     <div class="trx-line trx-muted" role="status">
@@ -216,8 +228,9 @@ async function inject() {
     }
 
     const data = await chrome.storage.local.get(CODEX_STORAGE_KEY);
-    if (data[CODEX_STORAGE_KEY]) {
-      renderBadge(root, data[CODEX_STORAGE_KEY]);
+    const localBadge = data[CODEX_STORAGE_KEY];
+    if (localBadge && normalizeBadgeHandle(localBadge) === handle) {
+      renderBadge(root, localBadge);
     } else {
       renderError(root);
     }
@@ -237,7 +250,15 @@ async function fetchRemoteBadge(handle) {
   if (!response.ok) {
     return null;
   }
-  return response.json();
+  const badge = await response.json();
+  return normalizeBadgeHandle(badge) === handle ? badge : null;
+}
+
+function normalizeBadgeHandle(badge) {
+  return String(badge?.xHandle || badge?.x_handle || "")
+    .replace(/^@/, "")
+    .trim()
+    .toLowerCase();
 }
 
 const observer = new MutationObserver(() => {

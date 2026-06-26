@@ -159,7 +159,10 @@ async function getBadge(rawHandle, env) {
 
   const row = await env.DB.prepare(
     `select * from badges
-     where x_handle = ? and provider = 'codex' and period = 'last_3_months'
+     where x_handle = ?
+       and provider = 'codex'
+       and period = 'last_3_months'
+       and confidence = 'codex_assisted_verified'
      limit 1`
   )
     .bind(xHandle)
@@ -170,6 +173,8 @@ async function getBadge(rawHandle, env) {
   }
 
   return json({
+    public: true,
+    xHandle,
     provider: row.provider,
     label: "Codex",
     period: row.period,
@@ -178,8 +183,6 @@ async function getBadge(rawHandle, env) {
     rank: JSON.parse(row.rank_json),
     confidence: row.confidence,
     source: row.source,
-    pageUrl: row.page_url,
-    evidence: safeJson(row.evidence_json),
     updatedAt: row.updated_at
   });
 }
@@ -291,14 +294,6 @@ function parseCompactNumber(value) {
   if (suffix === "万") return Math.round(number * 10_000);
   if (suffix === "亿") return Math.round(number * 100_000_000);
   return Math.round(number);
-}
-
-function safeJson(value) {
-  try {
-    return value ? JSON.parse(value) : null;
-  } catch {
-    return null;
-  }
 }
 
 function generateNonce() {

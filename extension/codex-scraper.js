@@ -14,6 +14,7 @@
   const badge = {
     provider: "codex",
     label: "Codex",
+    xHandle: normalizeHandle(state.tokenRankPendingUpload?.xHandle || state.tokenRankPendingUpload?.x_handle),
     totalTokens: result.totalTokens,
     formattedTokens: formatTokens(result.totalTokens),
     rank: calculateRank(result.totalTokens),
@@ -61,6 +62,13 @@ function extractTokenCount(text) {
   }
 
   return { totalTokens: 0, matchedText: "" };
+}
+
+function normalizeHandle(value) {
+  return String(value || "")
+    .replace(/^@/, "")
+    .trim()
+    .toLowerCase();
 }
 
 async function uploadBadge(upload, badge) {

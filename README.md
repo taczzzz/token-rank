@@ -97,6 +97,24 @@ Chrome/Edge -> chrome://extensions -> Developer mode -> Load unpacked -> 选择 
 https://x.com/shngyo1taczzzz
 ```
 
+## 别人电脑上如何看到你的等级
+
+别人安装 Token Rank 插件后，访问你的 X 主页时，插件会从 URL 里取出 handle：
+
+```text
+shngyo1taczzzz
+```
+
+然后请求公开接口：
+
+```text
+GET /api/badges/x/shngyo1taczzzz
+```
+
+Worker 只会返回已经通过 `codex_assisted_verified` 校验的公开 badge 数据。浏览者的插件不会读取你的 Codex、cookie、API Key、密码或本地文件；它只读取 Cloudflare D1 里已经公开的等级结果。
+
+如果某个 X handle 没有通过校验的公开 badge，插件会显示 `Token Rank 未验证`，不会用浏览者本机缓存的数据冒充该用户。
+
 ## 检查
 
 ```bash
